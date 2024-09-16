@@ -38,4 +38,5 @@ $ npx create-expo-app --template blank test-assembly
 $ git remote add origin git@github.com:Wahaha-007/test-assembly.git
 ถ้าไม่ใส่ข้างล่างจะได้ default branch master มาแทน
 $ git branch -M main
+$ git push --set-upstream origin main
 $ git push -u origin main

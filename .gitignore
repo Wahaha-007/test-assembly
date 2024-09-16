@@ -1,5 +1,7 @@
 # Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
 
+SecretNote.txt
+
 # dependencies
 node_modules/
 
@@ -7,7 +9,6 @@ node_modules/
 .expo/
 dist/
 web-build/
-SecretNote.txt
 
 # Native
 *.orig.*
