@@ -1,0 +1,41 @@
+Date : 16 Sep 24
+Purpose : Test using Web Assembly
+Finally : Use Image model like open CV and YOLO in ReactNative.
+
+I am planning for computer vision in mobile using ReactNative. 
+Some interaction with Python server (run on GUnicorn) is also expected. The task is about human face detection or hand and finger shape recognition. 
+I will not train or make any model, ready made model is preferred. 
+I normally use Expo to develop ReactNative for android.
+I would like to stick to Expo with no ejection (for simplicity).
+Any suggestion ?
+
+
+----> Answer
+1. TensorFlow.js (Web-based)
+2. Expo + WebAssembly (WASM-based ML models)
+3. External Cloud-Based APIs (No Ejection Needed)
+4. Expo Camera + External Web API
+
+
+
+If we finally want to have ReactNative Apps (Expo + Web Assembly) that can do some image recognition task like hand and finger shape. We will plan to first build simple Apps and gradually add elements to it. This is the great way to get familiar with Expo and Web Assembly and also the great way to debug.
+
+Phase 1: Initial Setup and Familiarization
+Phase 2: Introducing WebView and TensorFlow.js
+Phase 3: Adding WebAssembly (WASM)
+Phase 4: Performance Optimization and Features
+
+
+
+-------------------------------------------------
+Step 1 : Phase 1 is based on Expo official website :
+
+https://docs.expo.dev/versions/latest/sdk/camera/
+
+- Create git repo : test-assembly
+- Create app dor and point to git
+$ npx create-expo-app --template blank test-assembly
+$ git remote add origin git@github.com:Wahaha-007/test-assembly.git
+ถ้าไม่ใส่ข้างล่างจะได้ default branch master มาแทน
+$ git branch -M main
+$ git push -u origin main
