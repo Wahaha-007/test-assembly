@@ -1,3 +1,10 @@
+// Date : 16 Sep 24
+// Purpose : To use webview and use tensorflow inside it for hand/finger  prediction
+// To run program (in Expo) : 
+// อย่าลืมไปกด Run forward port ที่ Desktop ก่อนนะ ไม่งั้นติดต่อ port 8081 ไม่ได้ จะไม่เจอ Metro Bundler
+// 
+// $ npx expo start
+
 import React, { useRef, useState } from 'react';
 import * as FileSystem from 'expo-file-system';
 import { View, StyleSheet, Button, Text } from 'react-native';

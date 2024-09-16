@@ -1,5 +1,5 @@
 // Date : 16 Sep 24
-// Purpose : To Chat with GPT and gradually develop program for WebAssembly
+// Purpose : To access camera and capture image
 // To run program (in Expo) : 
 // อย่าลืมไปกด Run forward port ที่ Desktop ก่อนนะ ไม่งั้นติดต่อ port 8081 ไม่ได้ จะไม่เจอ Metro Bundler
 // 
@@ -48,10 +48,11 @@ export default function App() {
           //   skipProcessing: false, // Set to true to skip extra processing (e.g., rotation)
           // }
         );
+        console.log(photo.uri);
+        setCapturedPhoto(photo.uri);
       } catch (error) {
         console.error("Error capturing picture:", error);
       }
-      setCapturedPhoto(photo.uri);
     }
   };
 
