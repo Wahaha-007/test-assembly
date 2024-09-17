@@ -74,6 +74,8 @@ $ npx expo install react-native-webview
 $ npx expo install @tensorflow/tfjs
 $ npx expo install @tensorflow/tfjs-backend-wasm
 $ npx expo install expo-file-system --> No need, ready out of the box
+$ npx expo install expo-permissions
+
 
 รู้สึกจะได้ Package เพิ่มมาจากการ install ข้างบนพอควรเลยโดยเฉพาะ tfjs (อันที่ 2)
 
