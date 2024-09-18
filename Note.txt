@@ -73,23 +73,13 @@ $ npm install @tensorflow/tfjs-backend-wasm
 $ npx expo install react-native-webview
 $ npx expo install @tensorflow/tfjs
 $ npx expo install @tensorflow/tfjs-backend-wasm
-$ npx expo install expo-file-system --> No need, ready out of the box
 $ npx expo install expo-permissions
 
-
-รู้สึกจะได้ Package เพิ่มมาจากการ install ข้างบนพอควรเลยโดยเฉพาะ tfjs (อันที่ 2)
+npx expo install -- --legacy-peer-deps expo-gl expo-gl-cpp expo-image-manipulator expo-file-system base64-arraybuffer
 
 
 Steps for Phase 2:
 2.1 Set up the WebView for TensorFlow.js.
 2.2 Load TensorFlow.js inside WebView.
 2.3 Run a pre-trained hand detection model in TensorFlow.js.
-
-URI จาก web ข้างนอกเราเอามาลอง
-'https://c02.purpledshub.com/uploads/sites/41/2018/07/GettyImages-77937874-9ed4b0b.jpg?w=940&webp=1'; 
-
-URI from real camera
-file:///data/user/0/host.exp.exponent/cache/ExperienceData/%2540anonymous%252Ftest-assembly-ddbb8697-fda0-4ed2-b11d-427e16dfc939/Camera/8d50704b-eebc-48a4-a4df-b46466e1713e.jpg
-file:///data/user/0/host.exp.exponent/cache/ExperienceData/%2540anonymous%252Ftest-assembly-ddbb8697-fda0-4ed2-b11d-427e16dfc939/Camera/f54d392b-52cb-4280-93a0-9bddb21a57a2.jpg
-
 

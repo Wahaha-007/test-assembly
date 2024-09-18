@@ -37,19 +37,13 @@ export default function App() {
 		if (cameraRef.current) {
 			processingRef.current = true; // Set ref to true
 			const intervalId = setInterval(async () => {
-				// console.log(processingRef.current);
+				console.log(processingRef.current);
 				if (processingRef.current) {
-					const photo = await cameraRef.current.takePictureAsync(
-						{
-							skipProcessing: true,
-							base64: true,
-							quality: 0.5
-						}
-					);
+					const photo = await cameraRef.current.takePictureAsync({ base64: true, quality: 0.5 });
 					const base64Image = `data:image/jpeg;base64,${photo.base64}`;
 					webViewRef.current.postMessage(JSON.stringify({ image: base64Image }));
 				}
-			}, 1000); // 2 frames per second
+			}, 1000 / 2); // 2 frames per second
 
 			setCapturedFrame(intervalId);
 		}
@@ -74,11 +68,7 @@ export default function App() {
 
 	return (
 		<View style={styles.container}>
-			<CameraView
-				style={styles.camera}
-				facing={facing}
-				ref={cameraRef}
-				animateShutter={false}>
+			<CameraView style={styles.camera} facing={facing} ref={cameraRef}>
 				<View style={styles.buttonContainer}>
 					<Button title="Flip Camera" onPress={toggleCameraFacing} />
 					{!processingRef.current ? (
@@ -135,14 +125,14 @@ export default function App() {
                       self.postMessage(predictions);
                     }
                   \`])));
-									// console.log(worker);
+									console.log(worker);
 
                   document.addEventListener('message', function(event) {
 										console.log('Message RN -> WV');
 										const data = JSON.parse(event.data);
 										if (data.image) {
 											processImage(data.image);
-											// console.log(data.image);
+											console.log(data.image);
 										}
 									});	
 									console.log('Web view script is loaded.');		

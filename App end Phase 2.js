@@ -6,7 +6,6 @@
 // $ npx expo start
 
 import React, { useRef, useState } from 'react';
-import * as FileSystem from 'expo-file-system';
 import { View, StyleSheet, Button, Text } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { WebView } from 'react-native-webview';
@@ -41,10 +40,15 @@ export default function App() {
     if (cameraRef.current) {
       try {
         // 1. Capture photo from camera -> Var address (URI)
-        let photo = await cameraRef.current.takePictureAsync();
-        console.log("Photo:", photo);
-        let base64 = await FileSystem.readAsStringAsync(photo.uri, { encoding: FileSystem.EncodingType.Base64 });
-        const base64Image = `data:image/jpeg;base64,${base64}`;
+        let photo = await cameraRef.current.takePictureAsync(
+          {
+            skipProcessing: true,
+            quality: 0.5, // Optionally adjust the quality (0-1)
+            base64: true, // If you need a base64 encoded string for the image
+          }
+        );
+
+        const base64Image = `data:image/jpeg;base64,${photo.base64}`;
         setCapturedPhoto(base64Image);
         webViewRef.current.postMessage(JSON.stringify({ image: base64Image }));
       } catch (error) {
@@ -66,7 +70,11 @@ export default function App() {
 
   return (
     <View style={styles.container}>
-      <CameraView style={styles.camera} facing={facing} ref={cameraRef}>
+      <CameraView
+        style={styles.camera}
+        facing={facing}
+        ref={cameraRef}
+        animateShutter={false}>
         <View style={styles.buttonContainer}>
           <Button title="Flip Camera" onPress={toggleCameraFacing} />
           <Button title="Take Picture" onPress={takePicture} />
@@ -88,6 +96,8 @@ export default function App() {
               <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
               <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/handpose"></script>
               <script>
+								let model
+
                 // 1. Capture console.log and send it to React Native
                 (function() {
                   const originalConsoleLog = console.log;
@@ -96,61 +106,68 @@ export default function App() {
                     window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'log', message: args }));
                   };
                 })();
+								  
+								// 2. Function to load the model once
+								async function loadHandposeModel() {
+									model = await handpose.load();
+									console.log('Handpose model loaded');
+								}
 
                 /// 2. Main function for Model prediction
                 window.onload = function() {
-                    document.addEventListener('message', function(event) {
-                      console.log('Message RN -> WV');
-                      const data = JSON.parse(event.data);
-                      if (data.image) {
-                        const image = new Image();
-                        image.crossOrigin = 'anonymous'; // Handle CORS
-                        // image.src = 'https://c02.purpledshub.com/uploads/sites/41/2018/07/GettyImages-77937874-9ed4b0b.jpg?w=940&webp=1';
-                        image.src = data.image;
-                        // console.log(image.src);
-                        image.onload = async () => {
-                          console.log('Image loaded');
 
-                          // Set the target width and height for resizing
-                          const MAX_WIDTH = 640;  // Adjust the width for optimal performance
-                          const MAX_HEIGHT = 480;
+								  // 2.1. Load the model when the WebView is initialized once
+    							loadHandposeModel();
 
-                          // Create a canvas element to render the resized image
-                          const canvas = document.createElement('canvas');
-                          const ctx = canvas.getContext('2d');
+									// 2.2 Detect New Image message, every time new image present
+                  document.addEventListener('message', function(event) {
+										// console.log('Message RN -> WV');
+										const data = JSON.parse(event.data);
+										if (data.image) {
+											const image = new Image();
+											image.crossOrigin = 'anonymous'; // Handle CORS
+											image.src = data.image;
+											image.onload = async () => {
 
-                          // Calculate the new dimensions while preserving the aspect ratio
-                          let targetWidth, targetHeight;
-                          if (image.width > image.height) {
-                            targetWidth = MAX_WIDTH;
-                            targetHeight = image.height * (MAX_WIDTH / image.width);
+												// console.log('Image loaded');
+
+												// Set the target width and height for resizing
+												const MAX_WIDTH = 320;  // Adjust the width for optimal performance
+												const MAX_HEIGHT = 240;
+
+												// Calculate the new dimensions while preserving the aspect ratio
+												let targetWidth, targetHeight;
+												if (image.width > image.height) {
+													targetWidth = MAX_WIDTH;
+													targetHeight = image.height * (MAX_WIDTH / image.width);
                           } else {
                             targetHeight = MAX_HEIGHT;
                             targetWidth = image.width * (MAX_HEIGHT / image.height);
                           }
 
-                          canvas.width = targetWidth;
-                          canvas.height = targetHeight;
+												const canvas = new OffscreenCanvas(targetWidth, targetHeight);
+												const ctx = canvas.getContext('2d');
+												
+												// Create a canvas element to render the resized image
+												// const canvas = document.createElement('canvas');
+												// const ctx = canvas.getContext('2d');
 
+												// canvas.width = targetWidth;
+												// canvas.height = targetHeight;
 
-
-                          // Draw the resized image onto the canvas
-                          ctx.drawImage(image, 0, 0, targetWidth, targetHeight);
-                          console.log('Resized image:', targetWidth, 'x', targetHeight);
-
-                          const model = await handpose.load();
-                          console.log('Handpose model loaded');
-                          
-                          const predictions = await model.estimateHands(canvas);
-                          console.log(predictions);
-                          document.body.innerHTML += '<pre>' + JSON.stringify(predictions, null, 2) + '</pre>';
-                        };
-                        image.onerror = (error) => {
-                          console.error('Image loading error:', error);
-                        };
-                      }
-                    });
-
+												// Draw the resized image onto the canvas
+												ctx.drawImage(image, 0, 0, targetWidth, targetHeight);
+												console.log('Resized image:', targetWidth, 'x', targetHeight);
+												
+												const predictions = await model.estimateHands(canvas);
+												console.log(predictions);
+												document.body.innerHTML += '<pre>' + JSON.stringify(predictions, null, 2) + '</pre>';
+											};
+											image.onerror = (error) => {
+												console.error('Image loading error:', error);
+											};
+										}
+									});
                   console.log('Web view script is loaded.');
                 };
               </script>
@@ -165,7 +182,6 @@ export default function App() {
     </View>
   );
 }
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,

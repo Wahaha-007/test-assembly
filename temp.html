@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/handpose"></script>
+    <script>
+      let model;
+      let worker;
+
+      // 1. Capture console.log and send it to React Native
+      (function () {
+        const originalConsoleLog = console.log;
+        console.log = function (...args) {
+          originalConsoleLog.apply(console, args);
+          window.ReactNativeWebView.postMessage(
+            JSON.stringify({ type: 'log', message: args })
+          );
+        };
+      })();
+
+      /// 2. Main function for Model prediction
+      window.onload = async function () {
+        console.log('Web view script is loading.');
+
+        // 2.1. Load the model when the WebView is initialized once
+        model = await handpose.load();
+        console.log('Handpose model loaded');
+
+        // 2.2 Detect New Image message, every time new image present
+
+        // Initialize worker thread for predictions
+        worker = new Worker(
+          URL.createObjectURL(
+            new Blob([
+              `
+                    self.onmessage = async function(event) {
+                      const canvasData = event.data;
+                      const predictions = await model.estimateHands(canvasData);
+                      self.postMessage(predictions);
+                    }
+                  `,
+            ])
+          )
+        );
+
+        document.addEventListener('message', function (event) {
+          console.log('Message RN -> WV');
+          const data = JSON.parse(event.data);
+          if (data.image) {
+            processImage(data.image);
+          }
+        });
+        console.log('Web view script is loaded.');
+      };
+
+      async function processImage(imageData) {
+        const start = performance.now();
+        const image = new Image();
+        image.src = imageData;
+        image.crossOrigin = 'anonymous'; // Handle CORS
+
+        image.onload = async () => {
+          const canvas = new OffscreenCanvas(320, 240);
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(image, 0, 0, 320, 240);
+
+          // Send the canvas data to the worker
+          worker.postMessage(canvas);
+          worker.onmessage = function (predictions) {
+            console.log(predictions.data);
+            drawLandmarks(predictions.data);
+            const end = performance.now();
+            console.log('Prediction took:', (end - start).toFixed(2), 'ms');
+          };
+        };
+      }
+
+      // Draw landmarks on canvas
+      function drawLandmarks(predictions) {
+        const canvas = document.createElement('canvas');
+        document.body.appendChild(canvas);
+        const ctx = canvas.getContext('2d');
+        canvas.width = 320;
+        canvas.height = 240;
+
+        if (predictions && predictions.length > 0) {
+          predictions.forEach((prediction) => {
+            prediction.landmarks.forEach((point, index) => {
+              ctx.beginPath();
+              ctx.arc(point[0], point[1], 5, 0, 2 * Math.PI);
+              ctx.fillStyle = 'red';
+              ctx.fill();
+
+              // Draw line between points
+              if (index > 0) {
+                const prevPoint = prediction.landmarks[index - 1];
+                ctx.moveTo(prevPoint[0], prevPoint[1]);
+                ctx.lineTo(point[0], point[1]);
+                ctx.strokeStyle = 'blue';
+                ctx.stroke();
+              }
+            });
+          });
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <h1>TensorFlow.js in WebView</h1>
+  </body>
+</html>
